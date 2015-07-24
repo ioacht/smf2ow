@@ -6,7 +6,32 @@ class ContentTranslator {
         $translated = self::translateQuotes($translated);
         $translated = self::translateHSTumbnails($translated);
         $translated = self::parse_bbc($translated);
+        $translated = self::translateSmileys($translated);
         return $translated;
+    }
+
+    private static function translateSmileys($text) {
+        $base_url = OW_SMILEYS_BASE_URL;
+        $needles = array( ":)", ";)", ":D", ";D", ">:(", ":(", ":o", "8)","???", "::)", ":P",
+            ":-X", ":-\\", ":-*", ":'(");
+        $replacement = array(
+            "<img src=\"" . $base_url . "smiling.gif\" />&nbsp;",
+            "<img src=\"" . $base_url . "winking.gif\" />&nbsp;",
+            "<img src=\"" . $base_url . "laughing.gif\" />&nbsp;",
+            "<img src=\"" . $base_url . "ROFL.gif\" />&nbsp;",
+            "<img src=\"" . $base_url . "FUBAR.gif\" />&nbsp;",
+            "<img src=\"" . $base_url . "sad.gif\" />&nbsp;",
+            "<img src=\"" . $base_url . "surprised.gif\" />&nbsp;",
+            "<img src=\"" . $base_url . "cool.gif\" />&nbsp;",
+            "<img src=\"" . $base_url . "wondering.gif\" />&nbsp;",
+            "<img src=\"" . $base_url . "it wasn't me.gif\" />&nbsp;",
+            "<img src=\"" . $base_url . "tongue.gif\" />&nbsp;",
+            "<img src=\"" . $base_url . "speechless.gif\" />&nbsp;",
+            "<img src=\"" . $base_url . "thinking.gif\" />&nbsp;",
+            "<img src=\"" . $base_url . "makeup.gif\" />&nbsp;",
+            "<img src=\"" . $base_url . "crying.gif\" />&nbsp;"
+        );
+        return str_replace($needles, $replacement, $text);
     }
 
     private static function translateQuotes($text) {
