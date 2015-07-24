@@ -155,8 +155,8 @@ class ContentTranslator {
                 ),
                 array(
                     'tag' => 'b',
-                    'before' => '<span class="bbc_bold">',
-                    'after' => '</span>',
+                    'before' => '<b>',
+                    'after' => '</b>',
                 ),
                 array(
                     'tag' => 'bdo',
@@ -168,12 +168,12 @@ class ContentTranslator {
                 ),
                 array(
                     'tag' => 'black',
-                    'before' => '<span style="color: black;" class="bbc_color">',
+                    'before' => '<span style="color: black;">',
                     'after' => '</span>',
                 ),
                 array(
                     'tag' => 'blue',
-                    'before' => '<span class="bbc_color blue">',
+                    'before' => '<span style="color: blue;">',
                     'after' => '</span>',
                 ),
                 array(
@@ -265,18 +265,8 @@ class ContentTranslator {
                     'tag' => 'color',
                     'type' => 'unparsed_equals',
                     'test' => '(#[\da-fA-F]{3}|#[\da-fA-F]{6}|[A-Za-z]{1,20}|rgb\((?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\s?,\s?){2}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\))\]',
-                    'before' => '<span style="color: $1;" class="bbc_color">',
+                    'before' => '<span style="color: $1;" >',
                     'after' => '</span>',
-                ),
-                array(
-                    'tag' => 'email',
-                    'type' => 'unparsed_content',
-                    'content' => '<a href="mailto:$1" class="bbc_email">$1</a>',
-                    // @todo Should this respect guest_hideContacts?
-                    'validate' => function (&$tag, &$data, $disabled)
-                        {
-                            $data = strtr($data, array('<br>' => ''));
-                        },
                 ),
                 array(
                     'tag' => 'email',
@@ -287,25 +277,11 @@ class ContentTranslator {
                     'disallow_children' => array('email', 'ftp', 'url', 'iurl'),
                     'disabled_after' => ' ($1)',
                 ),
-//                array(
-//                    'tag' => 'flash',
-//                    'type' => 'unparsed_commas_content',
-//                    'test' => '\d+,\d+\]',
-//                    'content' => (isBrowser('ie') ? '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="$2" height="$3"><param name="movie" value="$1"><param name="play" value="true"><param name="loop" value="true"><param name="quality" value="high"><param name="AllowScriptAccess" value="never"><embed src="$1" width="$2" height="$3" play="true" loop="true" quality="high" AllowScriptAccess="never"><noembed><a href="$1" target="_blank" class="new_win">$1</a></noembed></object>' : '<embed type="application/x-shockwave-flash" src="$1" width="$2" height="$3" play="true" loop="true" quality="high" AllowScriptAccess="never"><noembed><a href="$1" target="_blank" class="new_win">$1</a></noembed>'),
-//                    'validate' => function (&$tag, &$data, $disabled)
-//                        {
-//                            if (isset($disabled['url']))
-//                                $tag['content'] = '$1';
-//                            elseif (strpos($data[0], 'http://') !== 0 && strpos($data[0], 'https://') !== 0)
-//                                $data[0] = 'http://' . $data[0];
-//                        },
-//                    'disabled_content' => '<a href="$1" target="_blank" class="new_win">$1</a>',
-//                ),
                 array(
                     'tag' => 'font',
                     'type' => 'unparsed_equals',
                     'test' => '[A-Za-z0-9_,\-\s]+?\]',
-                    'before' => '<span style="font-family: $1;" class="bbc_font">',
+                    'before' => '<span style="font-family: $1;">',
                     'after' => '</span>',
                 ),
                 array(
@@ -332,16 +308,9 @@ class ContentTranslator {
                     'disallow_children' => array('email', 'ftp', 'url', 'iurl'),
                     'disabled_after' => ' ($1)',
                 ),
-//                array(
-//                    'tag' => 'glow',
-//                    'type' => 'unparsed_commas',
-//                    'test' => '[#0-9a-zA-Z\-]{3,12},([012]\d{1,2}|\d{1,2})(,[^]]+)?\]',
-//                    'before' => isBrowser('ie') ? '<table style="border: 0; border-spacing: 0; padding: 0; display: inline; vertical-align: middle; font: inherit;"><tr><td style="filter: Glow(color=$1, strength=$2); font: inherit;">' : '<span style="text-shadow: $1 0 0 3px">',
-//                    'after' => isBrowser('ie') ? '</td></tr></table> ' : '</span>',
-//                ),
                 array(
                     'tag' => 'green',
-                    'before' => '<span class="bbc_color green">',
+                    'before' => '<span style="color: green;" >',
                     'after' => '</span>',
                 ),
                 array(
@@ -359,8 +328,8 @@ class ContentTranslator {
                 ),
                 array(
                     'tag' => 'i',
-                    'before' => '<em>',
-                    'after' => '</em>',
+                    'before' => '<i>',
+                    'after' => '</i>',
                 ),
                 array(
                     'tag' => 'img',
@@ -405,28 +374,13 @@ class ContentTranslator {
                 array(
                     'tag' => 'iurl',
                     'type' => 'unparsed_content',
-                    'content' => '<a href="$1" class="bbc_link">$1</a>',
-                    'validate' => function (&$tag, &$data, $disabled)
-                        {
-                            $data = strtr($data, array('<br>' => ''));
-                            if (strpos($data, 'http://') !== 0 && strpos($data, 'https://') !== 0)
-                                $data = 'http://' . $data;
-                        },
+                    'content' => '<a href="$1">$1</a>',
                 ),
                 array(
                     'tag' => 'iurl',
                     'type' => 'unparsed_equals',
-                    'before' => '<a href="$1" class="bbc_link">',
+                    'before' => '<a href="$1">',
                     'after' => '</a>',
-                    'validate' => function (&$tag, &$data, $disabled)
-                        {
-                            if (substr($data, 0, 1) == '#')
-                                $data = '#post_' . substr($data, 1);
-                            elseif (strpos($data, 'http://') !== 0 && strpos($data, 'https://') !== 0)
-                                $data = 'http://' . $data;
-                        },
-                    'disallow_children' => array('email', 'ftp', 'url', 'iurl'),
-                    'disabled_after' => ' ($1)',
                 ),
                 array(
                     'tag' => 'left',
@@ -571,7 +525,7 @@ class ContentTranslator {
                 ),
                 array(
                     'tag' => 'red',
-                    'before' => '<span class="bbc_color red">',
+                    'before' => '<span style="color: red;" >',
                     'after' => '</span>',
                 ),
                 array(
@@ -591,50 +545,18 @@ class ContentTranslator {
                     'before' => '<del>',
                     'after' => '</del>',
                 ),
-//                array(
-//                    'tag' => 'shadow',
-//                    'type' => 'unparsed_commas',
-//                    'test' => '[#0-9a-zA-Z\-]{3,12},(left|right|top|bottom|[0123]\d{0,2})\]',
-//                    'before' => isBrowser('ie') ? '<span style="display: inline-block; filter: Shadow(color=$1, direction=$2); height: 1.2em;">' : '<span style="text-shadow: $1 $2">',
-//                    'after' => '</span>',
-//                    'validate' => isBrowser('ie') ? function (&$tag, &$data, $disabled)
-//                        {
-//                            if ($data[1] == 'left')
-//                                $data[1] = 270;
-//                            elseif ($data[1] == 'right')
-//                                $data[1] = 90;
-//                            elseif ($data[1] == 'top')
-//                                $data[1] = 0;
-//                            elseif ($data[1] == 'bottom')
-//                                $data[1] = 180;
-//                            else
-//                                $data[1] = (int) $data[1];
-//                        } : function (&$tag, &$data, $disabled)
-//                        {
-//                            if ($data[1] == 'top' || (is_numeric($data[1]) && $data[1] < 50))
-//                                $data[1] = '0 -2px 1px';
-//                            elseif ($data[1] == 'right' || (is_numeric($data[1]) && $data[1] < 100))
-//                                $data[1] = '2px 0 1px';
-//                            elseif ($data[1] == 'bottom' || (is_numeric($data[1]) && $data[1] < 190))
-//                                $data[1] = '0 2px 1px';
-//                            elseif ($data[1] == 'left' || (is_numeric($data[1]) && $data[1] < 280))
-//                                $data[1] = '-2px 0 1px';
-//                            else
-//                                $data[1] = '1px 1px 1px';
-//                        },
-//                ),
                 array(
                     'tag' => 'size',
                     'type' => 'unparsed_equals',
                     'test' => '([1-9][\d]?p[xt]|small(?:er)?|large[r]?|x[x]?-(?:small|large)|medium|(0\.[1-9]|[1-9](\.[\d][\d]?)?)?em)\]',
-                    'before' => '<span style="font-size: $1;" class="bbc_size">',
+                    'before' => '<span style="font-size: $1;" >',
                     'after' => '</span>',
                 ),
                 array(
                     'tag' => 'size',
                     'type' => 'unparsed_equals',
                     'test' => '[1-7]\]',
-                    'before' => '<span style="font-size: $1;" class="bbc_size">',
+                    'before' => '<span style="font-size: $1;" >',
                     'after' => '</span>',
                     'validate' => function (&$tag, &$data, $disabled)
                         {
@@ -654,7 +576,7 @@ class ContentTranslator {
                 ),
                 array(
                     'tag' => 'table',
-                    'before' => '<table class="bbc_table">',
+                    'before' => '<table>',
                     'after' => '</table>',
                     'trim' => 'inside',
                     'require_children' => array('tr'),
@@ -700,8 +622,8 @@ class ContentTranslator {
                 ),
                 array(
                     'tag' => 'u',
-                    'before' => '<span class="bbc_u">',
-                    'after' => '</span>',
+                    'before' => '<u>',
+                    'after' => '</u>',
                 ),
                 array(
                     'tag' => 'url',
@@ -729,7 +651,7 @@ class ContentTranslator {
                 ),
                 array(
                     'tag' => 'white',
-                    'before' => '<span style="color: white;" class="bbc_color">',
+                    'before' => '<span style="color: white;">',
                     'after' => '</span>',
                 ),
             );
@@ -783,18 +705,6 @@ class ContentTranslator {
             }
             $codes = null;
         }
-
-//        // Shall we take the time to cache this?
-//        if ($cache_id != '' && !empty($modSettings['cache_enable']) && (($modSettings['cache_enable'] >= 2 && isset($message[1000])) || isset($message[2400])) && empty($parse_tags))
-//        {
-//            // It's likely this will change if the message is modified.
-//            $cache_key = 'parse:' . $cache_id . '-' . md5(md5($message) . '-' . $smileys . (empty($disabled) ? '' : implode(',', array_keys($disabled))) . serialize($context['browser']) . $txt['lang_locale'] . $user_info['time_offset'] . $user_info['time_format']);
-//
-//            if (($temp = cache_get_data($cache_key, 240)) != null)
-//                return $temp;
-//
-//            $cache_t = microtime();
-//        }
 
         if ($smileys === 'print')
         {
@@ -1516,19 +1426,7 @@ class ContentTranslator {
         while ($tag = array_pop($open_tags))
             $message .= "\n" . $tag['after'] . "\n";
 
-        // Parse the smileys within the parts where it can be done safely.
-//        if ($smileys === true)
-//        {
-//            $message_parts = explode("\n", $message);
-//            for ($i = 0, $n = count($message_parts); $i < $n; $i += 2)
-//                parsesmileys($message_parts[$i]);
-//
-//            $message = implode('', $message_parts);
-//        }
-//
-//        // No smileys, just get rid of the markers.
-//        else
-//            $message = strtr($message, array("\n" => ''));
+        $message = strtr($message, array("\n" => ''));
 
         if ($message[0] === ' ')
             $message = '&nbsp;' . substr($message, 1);
@@ -1536,35 +1434,6 @@ class ContentTranslator {
         // Cleanup whitespace.
         $message = strtr($message, array('  ' => ' &nbsp;', "\r" => '', "\n" => '<br>', '<br> ' => '<br>&nbsp;', '&#13;' => "\n"));
 
-//        // Allow mods access to what parse_bbc created
-//        call_integration_hook('integrate_post_parsebbc', array(&$message, &$smileys, &$cache_id, &$parse_tags));
-//
-//        // Cache the output if it took some time...
-//        if (isset($cache_key, $cache_t) && array_sum(explode(' ', microtime())) - array_sum(explode(' ', $cache_t)) > 0.05)
-//            cache_put_data($cache_key, $message, 240);
-//
-//        // If this was a force parse revert if needed.
-//        if (!empty($parse_tags))
-//        {
-//            if (empty($temp_bbc))
-//                $bbc_codes = array();
-//            else
-//            {
-//                $bbc_codes = $temp_bbc;
-//                unset($temp_bbc);
-//            }
-//        }
-
         return $message;
     }
-
-
 }
-
-//
-//echo("Testing ContentTranslator: <br/><br/><br/>");
-//
-//$test_string = "http://www.theguardian.com/commentisfree/2015/may/22/facebook-finest-sex-death-ban-gustave-courbet-masterpiece?CMP=fb_gu<br /><br /><br />Gustave Courbets The Origin of the World  his clinically voyeuristic 1866 oil painting of a woman shown literally and solely as a sex object, with all distractions, such as her face, ruthlessly removed  hangs in the Musée dOrsay in Paris, opposite his far larger canvas A Burial at Ornans (184950).<br /><br />[hs width=400 height=336]http://i.guim.co.uk/static/w-1920/h--/q-95/sys-images/Guardian/Pix/pictures/2015/5/22/1432307230609/b2d5af5d-25aa-4799-86e9-f88183695e5b-2060x1729.jpeg[/hs]<br /><br />[size=8pt]Gustave Courbets &#039;The Origin of the World&#039; - 1866 [/size]<br /><br />It is an incredibly powerful juxtaposition, an unforgettable double act. The small, yet white and bright and unavoidably shocking Origin looks across a shadowy space at the huge, dark, funeral scene, with its enigmatic rural faces gathered around the black void of a grave.<br /><br />If you could ask Courbet what he believed in, this display makes it plain that he would give the same answer as Woody Allen in Sleeper: Sex and death. Two things that come once in a lifetime, but at least after death youre not nauseous.<br /><br />&nbsp; &nbsp; This is sex as the elixir of reality, the secret to making art truly alive<br /><br />Facebook, it seems, gets nauseous when it looks at The Origin of the World. It has banned Courbets 19th-century painting and closed down the Facebook page of French art lover Frédéric Durand-Baïssas for showing it in breach of its nudity policy. Now Durand-Baïssas is suing for damages and demanding the restoration of his Facebook rights.<br /><br />http://www.theguardian.com/commentisfree/2015/may/22/facebook-finest-sex-death-ban-gustave-courbet-masterpiece?CMP=fb_gu";
-//$result = ContentTranslator::translate($test_string);
-//
-//echo(htmlentities($result));
