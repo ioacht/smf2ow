@@ -21,15 +21,21 @@ class UsersMigrator {
 
     public function migrate() {
         echo("Migrating users ...<br/><br/>");
+        $user_service =  BOL_UserService::getInstance();
         $smf_users = $this->getSmfUsers();
         foreach($smf_users as $smf_user) {
             try {
-                $smf_user_name = $smf_user['member_name'];
-                $name = $this->cleanSmfUsername($smf_user_name);
-                $ow_user = $this->createOxwallUser($name, "pass", $smf_user['email_address'], $smf_user["date_registered"]);
-                $ow_user_id = $ow_user->getId();
-                $this->setUserRole($ow_user_id, $smf_user['id_group']);
-                $this->setUserMetaData($ow_user_id, $smf_user);
+                if($user_service->isExistEmail($smf_user['email_address'])) {
+                    $user_dao = BOL_UserDao::getInstance();
+                    $ow_user = $user_dao->findByUseEmail($smf_user["email_address"]);
+                } else {
+                    $smf_user_name = $smf_user['member_name'];
+                    $name = $this->cleanSmfUsername($smf_user_name);
+                    $ow_user = $this->createOxwallUser($name, "pass", $smf_user['email_address'], $smf_user["date_registered"]);
+                    $ow_user_id = $ow_user->getId();
+                    $this->setUserRole($ow_user_id, $smf_user['id_group']);
+                    $this->setUserMetaData($ow_user_id, $smf_user);
+                }
                 $this->migration_persistence->addUserEntry($smf_user['id_member'], $ow_user->getId(), $smf_user_name);
                 echo("User " . $smf_user['member_name'] ." migrated successfully! <br/>");
             } catch (Exception $e) {
