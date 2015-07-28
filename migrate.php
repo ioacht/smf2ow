@@ -19,11 +19,13 @@ $persistence = MigrationPersistence::getInstance();
 // Migrators
 $users_migrator = UsersMigrator::getInstance();
 $posts_migrator = PostsMigrator::getInstance();
+$attachments_migrator = AttachmentsMigrator::getInstance();
 
 // Stages
 $stages = array(
     array($users_migrator, "migrate"),
-    array($posts_migrator, "migrate")
+    array($posts_migrator, "migrate"),
+    array($attachments_migrator, "migrate")
 );
 
 // Go!
@@ -31,5 +33,3 @@ $start_time = time();
 call_user_func($stages[$persistence->getState()['current_stage']]);
 $elapsed = time() - $start_time;
 echo("Operation Time:   " . $elapsed  ." sec <br/>");
-
-

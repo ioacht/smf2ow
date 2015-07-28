@@ -33,6 +33,10 @@ class MigrationPersistence {
         $this->db->insert(self::$pre.'_posts', array("smf_id" => $smf_id, "ow_id" => $ow_id));
     }
 
+    public function addAttachmentEntry($smf_id, $ow_id) {
+        $this->db->insert(self::$pre.'_attachments', array("smf_id" => $smf_id, "ow_id" => $ow_id));
+    }
+
     public function reportProblem($smf_id, $type, $error) {
         $this->db->insert(self::$pre.'_problems', array("object_type" => $type, "object_id" => $smf_id, "error_message" => $error));
     }
@@ -54,6 +58,12 @@ class MigrationPersistence {
         return $data["ow_id"];
     }
 
+    public function getOwAttachmentId($smf_id) {
+        $t = self::$pre."_attachments";
+        $data = $this->db->queryFirstRow("SELECT ow_id FROM " . $t . " WHERE smf_id = %i", $smf_id);
+        return $data["ow_id"];
+    }
+
     public function getState() {
         if(is_null($this->state)){
             $t = self::$pre."_state";
@@ -65,7 +75,8 @@ class MigrationPersistence {
                     "current_forum_index" => 0,
                     "last_user_id" => 0,
                     "last_topic_id" => 0,
-                    "last_post_id" => 0
+                    "last_post_id" => 0,
+                    "last_attachment_id" => 0
                 );
                 $this->db->insert(self::$pre."_state", $this->state);
             }
@@ -90,6 +101,11 @@ class MigrationPersistence {
 
     public function setLastPostId($id) {
         $this->state["last_post_id"] = $id;
+        $this->db->update(self::$pre."_state", $this->state, "id = 8");
+    }
+
+    public function setLastAttachmentId($id) {
+        $this->state["last_attachment_id"] = $id;
         $this->db->update(self::$pre."_state", $this->state, "id = 8");
     }
 
@@ -145,6 +161,11 @@ class MigrationPersistence {
           ow_id INT(11)
         )", self::$pre);
 
+        $sql_attachments = sprintf("CREATE TABLE IF NOT EXISTS %s_attachments (
+          smf_id INT(8) UNSIGNED PRIMARY KEY,
+          ow_id INT(11)
+        )", self::$pre);
+
         $sql_problems = sprintf("CREATE TABLE IF NOT EXISTS %s_problems (
           id INT(8) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
           object_type varchar(20),
@@ -158,7 +179,8 @@ class MigrationPersistence {
           current_forum_index INT(2) UNSIGNED,
           last_user_id INT(8) UNSIGNED,
           last_topic_id INT(8) UNSIGNED,
-          last_post_id INT(8) UNSIGNED
+          last_post_id INT(8) UNSIGNED,
+          last_attachment_id INT(8) UNSIGNED
         )", self::$pre);
 
         if ($conn->query($sql_users) !== TRUE) {
@@ -171,6 +193,10 @@ class MigrationPersistence {
 
         if ($conn->query($sql_posts) !== TRUE) {
             throw new Exception('MigrationMapper posts table creation failed');
+        }
+
+        if ($conn->query($sql_attachments) !== TRUE) {
+            throw new Exception('MigrationMapper attachments table creation failed');
         }
 
         if ($conn->query($sql_problems) !== TRUE) {
