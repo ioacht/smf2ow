@@ -1,16 +1,13 @@
 <?php
 define('BATCH_SIZE', 1000);
 
-// USERS AND GROUPS
-define('SMF_ACTIVE_GROUP_ID', 10);
-define('SMF_NON_ACTIVE_GROUP_ID', 11);
-
-define('OW_ACTIVE_GROUP_ID', 15);
-define('OW_NON_ACTIVE_GROUP_ID', 16);
+// USERS AND GROUPS (first value in array is the default)
+define('SMF_USER_GROUPS_IDS', serialize(array(2, 4, 8)));
+define('OW_USER_GROUPS_IDS', serialize(array(10, 11, 12)));
 
 // FORUMS
-define('SMF_FORUM_IDS', serialize([1]));
-define('OW_FORUM_IDS', serialize([4]));
+define('SMF_FORUM_IDS', serialize(array(1)));
+define('OW_FORUM_IDS', serialize(array(8)));
 
 // DATABASES
 define('MIGRATION_HELPER_DB_HOST', '127.0.0.1');

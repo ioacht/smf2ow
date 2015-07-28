@@ -8,6 +8,9 @@ class UsersMigrator {
     private $ow_db;
     private $migration_persistence;
     private $roles_map;
+    private $smf_roles;
+    private $ow_roles;
+
 
     public static function getInstance()
     {
@@ -57,15 +60,8 @@ class UsersMigrator {
         $this->smf_db = new MeekroDB(SMF_DB_HOST, SMF_DB_USER, SMF_DB_PASSWORD, SMF_DB_SCHEMA);
         $this->ow_db = new MeekroDB(OW_DB_HOST, OW_DB_USER, OW_DB_PASSWORD, OW_DB_NAME);
         $this->migration_persistence = MigrationPersistence::getInstance();
-        $this->initRolesMap();
-    }
-
-    private function initRolesMap() {
-        $this->roles_map = array(
-            SMF_TEACHERS_GROUP_ID => OW_TEACHERS_GROUP_ID,
-            SMF_ACTIVE_GROUP_ID => OW_ACTIVE_GROUP_ID,
-            SMF_NON_ACTIVE_GROUP_ID => OW_NON_ACTIVE_GROUP_ID
-        );
+        $this->smf_roles = unserialize(SMF_USER_GROUPS_IDS);
+        $this->ow_roles = unserialize(OW_USER_GROUPS_IDS);
     }
 
     private function getSmfUsers() {
@@ -148,12 +144,12 @@ class UsersMigrator {
     private function setUserRole($ow_user_id, $smf_role) {
         $dao = BOL_AuthorizationUserRoleDao::getInstance();
         $user_role = new BOL_AuthorizationUserRole();
-        if(array_key_exists($smf_role, $this->roles_map)) {
-            $roleId = $this->roles_map[$smf_role];
+        $smf_role_index = array_search($smf_role, $this->smf_roles);
+        if($smf_role_index !== FALSE) {
+            $roleId = $this->ow_roles[$smf_role_index];
         } else {
-            $roleId = OW_NON_ACTIVE_GROUP_ID;
+            $roleId = $this->ow_roles[0];
         }
-
         $user_role->roleId = $roleId;
         $user_role->userId = $ow_user_id;
         $dao->save($user_role);
