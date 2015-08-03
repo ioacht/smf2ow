@@ -40,10 +40,11 @@ class PostsMigrator {
 
     private function migrateTopicsForForum($smf_forum_id, $ow_forum_id) {
         while($this->remaining_count > 0) {
-            $last_post_id = $this->migration_persistence->getState()["last_post_id"];
-            $topicAndNext = $this->getCurrentAndNextTopicForForum($smf_forum_id);
+            $last_topic_id = $this->migration_persistence->getLastImportedTopicId($smf_forum_id);
+            $last_post_id = $this->migration_persistence->getLastImportedPostId($last_topic_id);
+            $topicAndNext = $this->getCurrentAndNextTopicForForum($smf_forum_id, $last_topic_id);
             $topic = $topicAndNext[0];
-            if($last_post_id == 0) {
+            if($last_post_id === null) {
                 $ow_topic_id = $this->addTopicToOw($topic, $ow_forum_id);
             } else {
                 $ow_topic_id = $this->migration_persistence->getOwTopicId($topic["id_topic"]);
@@ -51,21 +52,19 @@ class PostsMigrator {
             $this->migrateMessagesForTopic($topic["id_topic"], $ow_topic_id, $topic['id_last_msg']);
             // Update state
             if($this->remaining_count > 0) {
-                $this->migration_persistence->setLastTopicId($topicAndNext[1]["id_topic"]);
-                $this->migration_persistence->setLastPostId(0);
+                $this->migration_persistence->setLastImportedTopicId($topicAndNext[1]["id_topic"], $smf_forum_id);
             }
         }
     }
 
-    private function getCurrentAndNextTopicForForum($smf_forum_id) {
-        $last_topic_id = $this->migration_persistence->getState()["last_topic_id"];
+    private function getCurrentAndNextTopicForForum($smf_forum_id, $smf_topic_id) {
         return $this->smf_db->query("SELECT smf_topics.id_topic, smf_topics.is_sticky, smf_topics.id_board,
           smf_topics.id_member_started, smf_topics.locked, smf_topics.id_last_msg,
           smf_topics.num_views, smf_messages.subject
           FROM smf_topics INNER JOIN smf_messages
           ON smf_topics.id_first_msg = smf_messages.id_msg
           WHERE smf_topics.id_board = %i AND smf_topics.id_topic >= %i ORDER BY smf_topics.id_topic ASC LIMIT 2",
-            $smf_forum_id, $last_topic_id);
+            $smf_forum_id, $smf_topic_id);
     }
 
     private function migrateMessagesForTopic($smf_topic_id, $ow_topic_id, $smf_topic_last_post_id) {
@@ -77,12 +76,12 @@ class PostsMigrator {
             }
         }
         // Update state
-        $this->migration_persistence->setLastPostId(end($posts)["id_msg"]);
+        $this->migration_persistence->setLastImportedPostId(end($posts)["id_msg"], $smf_topic_id);
         $this->remaining_count -= count($posts);
     }
 
     private function getPostsForTopic($smf_topic_id) {
-        $last_post_id = $this->migration_persistence->getState()["last_post_id"];
+        $last_post_id = $this->migration_persistence->getLastImportedPostId($smf_topic_id);
         return $this->smf_db->query("SELECT id_msg, id_member, body, poster_time
           FROM smf_messages
           WHERE id_topic = %i AND id_msg > %i ORDER BY id_msg ASC LIMIT %i;",
@@ -135,24 +134,4 @@ class PostsMigrator {
         $ow_topic_dto->lastPostId = $last_post_id;
         $this->ow_forum_service->saveOrUpdateTopic($ow_topic_dto);
     }
-
-//    private function getNextOwTopicId() {
-//        $status = $this->ow_db->queryFirstRow("SHOW TABLE STATUS LIKE 'ow_forum_topic'");
-//        return $status["Auto_increment"];
-//    }
-//
-//    private function getNextOwPostId() {
-//        $status = $this->ow_db->queryFirstRow("SHOW TABLE STATUS LIKE 'ow_forum_post'");
-//        return $status["Auto_increment"];
-//    }
-//
-//    private function extractPostById(&$posts, $id) {
-//        foreach($posts as $i => $post) {
-//            if($post["id_msg"] == $id) {
-//                unset($posts[$i]);
-//                break;
-//            }
-//        }
-//        return $post;
-//    }
 } 

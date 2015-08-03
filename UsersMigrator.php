@@ -65,9 +65,15 @@ class UsersMigrator {
     }
 
     private function getSmfUsers() {
+        $bord_ids = join(', ', unserialize(SMF_FORUM_IDS));
         $last_user_id = $this->migration_persistence->getState()['last_user_id'];
-        return $this->smf_db->query("SELECT id_member, member_name, date_registered, id_group, email_address, real_name
-                                     FROM smf_members WHERE id_member > %i LIMIT %i", $last_user_id, BATCH_SIZE);
+        return $this->smf_db->query("SELECT DISTINCT smf_members.id_member, smf_members.member_name,
+            smf_members.date_registered, smf_members.id_group, smf_members.email_address, smf_members.real_name
+        FROM smf_members
+        JOIN smf_messages ON smf_messages.id_member = smf_members.id_member
+        JOIN smf_topics ON smf_topics.id_topic = smf_messages.id_topic
+        WHERE smf_topics.id_board IN (" . $bord_ids . ")
+        AND smf_members.id_member > %i LIMIT %i", $last_user_id, BATCH_SIZE);
     }
 
     private function createOxwallUser( $username, $password, $email, $joinStamp, $accountType = null, $emailVerify = true )

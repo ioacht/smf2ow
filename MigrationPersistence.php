@@ -73,10 +73,7 @@ class MigrationPersistence {
                     "id" => 8,
                     "current_stage" => 0,
                     "current_forum_index" => 0,
-                    "last_user_id" => 0,
-                    "last_topic_id" => 0,
-                    "last_post_id" => 0,
-                    "last_attachment_id" => 0
+                    "last_user_id" => 0
                 );
                 $this->db->insert(self::$pre."_state", $this->state);
             }
@@ -94,19 +91,40 @@ class MigrationPersistence {
         $this->db->update(self::$pre."_state", $this->state, "id = 8");
     }
 
-    public function setLastTopicId($id) {
-        $this->state["last_topic_id"] = $id;
-        $this->db->update(self::$pre."_state", $this->state, "id = 8");
+    public function setLastImportedTopicId($topic_id, $forum_id) {
+        $this->db->insert(self::$pre."_last_import", array("object_type" => "topic",
+            "object_id" => $topic_id, "parent_id" => $forum_id));
     }
 
-    public function setLastPostId($id) {
-        $this->state["last_post_id"] = $id;
-        $this->db->update(self::$pre."_state", $this->state, "id = 8");
+    public function setLastImportedPostId($post_id, $topic_id) {
+        $this->db->insert(self::$pre."_last_import", array("object_type" => "post",
+            "object_id" => $post_id, "parent_id" => $topic_id));
     }
 
-    public function setLastAttachmentId($id) {
-        $this->state["last_attachment_id"] = $id;
-        $this->db->update(self::$pre."_state", $this->state, "id = 8");
+    public function setLastImportedAttachmentId($attachment_id, $post_id) {
+        $this->db->insert(self::$pre."_last_import", array("object_type" => "attachment",
+            "object_id" => $attachment_id, "parent_id" => $post_id));
+    }
+
+    public function getLastImportedTopicId($forum_id) {
+        $table = self::$pre."_last_import";
+        return $this->db->queryFirstField("SELECT object_id FROM " . $table . " WHERE object_type=%s AND parent_id=%i
+                                          ORDER BY id DESC LIMIT 1",
+            "topic", $forum_id);
+    }
+
+    public function getLastImportedPostId($topic_id) {
+        $table = self::$pre."_last_import";
+        return $this->db->queryFirstField("SELECT object_id FROM " . $table . " WHERE object_type=%s AND parent_id=%i
+                                           ORDER BY id DESC LIMIT 1",
+            "post", $topic_id);
+    }
+
+    public function getLastImportedAttachmentId($post_id) {
+        $table = self::$pre."_last_import";
+        return $this->db->queryFirstField("SELECT object_id FROM " . $table . " WHERE object_type=%s AND parent_id=%i
+                                           ORDER BY id DESC LIMIT 1",
+            "attachment", $post_id);
     }
 
     private function __construct()
@@ -183,6 +201,13 @@ class MigrationPersistence {
           last_attachment_id INT(8) UNSIGNED
         )", self::$pre);
 
+        $sql_last_import = sprintf("CREATE TABLE IF NOT EXISTS %s_last_import (
+          id INT(1) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+          object_type varchar(20),
+          object_id INT(8) UNSIGNED,
+          parent_id INT(8) UNSIGNED
+        )", self::$pre);
+
         if ($conn->query($sql_users) !== TRUE) {
             throw new Exception('MigrationMapper users table creation failed');
         }
@@ -205,6 +230,10 @@ class MigrationPersistence {
 
         if ($conn->query($sql_state) !== TRUE) {
             throw new Exception('MigrationMapper state table creation failed');
+        }
+
+        if ($conn->query($sql_last_import) !== TRUE) {
+            throw new Exception('MigrationMapper last_import table creation failed');
         }
 
         $conn->close();

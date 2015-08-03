@@ -5,6 +5,7 @@ error_reporting(E_ALL);
 require_once("conf.php");
 require_once("UsersMigrator.php");
 require_once("PostsMigrator.php");
+require_once("AttachmentsMigrator.php");
 require_once("MigrationPersistence.php");
 include(OW_DIR_ROOT . 'ow_includes' . DS . 'init.php');
 require_once(OW_DIR_ROOT . 'ow_includes' . DS . 'init.php');
