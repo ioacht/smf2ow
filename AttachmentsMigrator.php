@@ -18,7 +18,7 @@ class AttachmentsMigrator {
     }
 
     public function migrate() {
-        echo("Migrating users ...<br/><br/>");
+        echo("Migrating Attachments ...<br/><br/>");
     }
 
     private function __construct()

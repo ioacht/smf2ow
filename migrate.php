@@ -30,7 +30,13 @@ $stages = array(
 );
 
 // Go!
-$start_time = time();
-call_user_func($stages[$persistence->getState()['current_stage']]);
-$elapsed = time() - $start_time;
-echo("Operation Time:   " . $elapsed  ." sec <br/>");
+$current_stage = $persistence->getState()['current_stage'];
+if($current_stage + 1 < count($stages)){
+    $start_time = time();
+    call_user_func($stages[$current_stage]);
+    $elapsed = time() - $start_time;
+    echo("Operation Time:   " . $elapsed  ." sec <br/>");
+} else {
+   echo("Migration Done!");
+}
+

@@ -52,8 +52,23 @@ class PostsMigrator {
             $this->migrateMessagesForTopic($topic["id_topic"], $ow_topic_id, $topic['id_last_msg']);
             // Update state
             if($this->remaining_count > 0) {
-                $this->migration_persistence->setLastImportedTopicId($topicAndNext[1]["id_topic"], $smf_forum_id);
+                if(count($topicAndNext) === 2){
+                    $this->migration_persistence->setLastImportedTopicId($topicAndNext[1]["id_topic"], $smf_forum_id);
+                } else {
+                    $this->moveToNextForumOrNextSage();
+                    break;
+                }
             }
+        }
+    }
+
+    private function moveToNextForumOrNextSage() {
+        $index = $this->migration_persistence->getState()["current_forum_index"];
+        $smf_forum_ids = unserialize(SMF_FORUM_IDS);
+        if($index + 1 < count($smf_forum_ids)){
+            $this->migration_persistence->progressToNextForum();
+        } else {
+            $this->migration_persistence->progressToNextStage();
         }
     }
 

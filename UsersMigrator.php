@@ -7,7 +7,6 @@ class UsersMigrator {
     private $smf_db;
     private $ow_db;
     private $migration_persistence;
-    private $roles_map;
     private $smf_roles;
     private $ow_roles;
 

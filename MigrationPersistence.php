@@ -81,7 +81,12 @@ class MigrationPersistence {
         return $this->state;
     }
 
-    public function progressToNextStage() {
+    public function progressToNextForum() {
+        $this->state["current_forum_index"] += 1;
+        $this->db->update(self::$pre."_state", $this->state, "id = 8");
+    }
+
+        public function progressToNextStage() {
         $this->state["current_stage"] += 1;
         $this->db->update(self::$pre."_state", $this->state, "id = 8");
     }
