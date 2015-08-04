@@ -58,6 +58,12 @@ class MigrationPersistence {
         return $data["ow_id"];
     }
 
+    public function getOwPostId($smf_id) {
+        $t = self::$pre."_posts";
+        $data = $this->db->queryFirstRow("SELECT ow_id FROM " . $t . " WHERE smf_id = %i", $smf_id);
+        return $data["ow_id"];
+    }
+
     public function getOwAttachmentId($smf_id) {
         $t = self::$pre."_attachments";
         $data = $this->db->queryFirstRow("SELECT ow_id FROM " . $t . " WHERE smf_id = %i", $smf_id);
@@ -73,7 +79,8 @@ class MigrationPersistence {
                     "id" => 8,
                     "current_stage" => 0,
                     "current_forum_index" => 0,
-                    "last_user_id" => 0
+                    "last_user_id" => 0,
+                    "last_attachment_id" => 0
                 );
                 $this->db->insert(self::$pre."_state", $this->state);
             }
@@ -106,9 +113,9 @@ class MigrationPersistence {
             "object_id" => $post_id, "parent_id" => $topic_id));
     }
 
-    public function setLastImportedAttachmentId($attachment_id, $post_id) {
-        $this->db->insert(self::$pre."_last_import", array("object_type" => "attachment",
-            "object_id" => $attachment_id, "parent_id" => $post_id));
+    public function setLastImportedAttachmentId($attachment_id) {
+        $this->state["last_attachment_id"] = $attachment_id;
+        $this->db->update(self::$pre."_state", $this->state, "id = 8");
     }
 
     public function getLastImportedTopicId($forum_id) {
@@ -125,11 +132,8 @@ class MigrationPersistence {
             "post", $topic_id);
     }
 
-    public function getLastImportedAttachmentId($post_id) {
-        $table = self::$pre."_last_import";
-        return $this->db->queryFirstField("SELECT object_id FROM " . $table . " WHERE object_type=%s AND parent_id=%i
-                                           ORDER BY id DESC LIMIT 1",
-            "attachment", $post_id);
+    public function getLastImportedAttachmentId() {
+        return $this->getState()["last_attachment_id"];
     }
 
     private function __construct()
@@ -201,8 +205,6 @@ class MigrationPersistence {
           current_stage INT(1) UNSIGNED,
           current_forum_index INT(2) UNSIGNED,
           last_user_id INT(8) UNSIGNED,
-          last_topic_id INT(8) UNSIGNED,
-          last_post_id INT(8) UNSIGNED,
           last_attachment_id INT(8) UNSIGNED
         )", self::$pre);
 

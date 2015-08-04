@@ -27,4 +27,6 @@ define('DS', DIRECTORY_SEPARATOR);
 define('DIR_ROOT', dirname(__FILE__) . DS);
 define('OW_DIR_ROOT', dirname(__FILE__) . DS . 'oxwall' . DS);
 
+define('SMF_ATTACHMENT_FOLDERS', serialize(array("/var/folder_1", "/var/folder_2", "/var/folder_3")));
+
 define('OW_SMILEYS_BASE_URL', "http://example.com/ow_userfiles/plugins/smileys/smileys/");

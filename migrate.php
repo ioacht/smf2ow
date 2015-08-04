@@ -30,13 +30,18 @@ $stages = array(
 );
 
 // Go!
-$current_stage = $persistence->getState()['current_stage'];
-if($current_stage < count($stages)){
-    $start_time = time();
-    call_user_func($stages[$current_stage]);
-    $elapsed = time() - $start_time;
-    echo("Operation Time:   " . $elapsed  ." sec <br/>");
-} else {
-   echo("Migration Done!");
+try{
+    $current_stage = $persistence->getState()['current_stage'];
+    if($current_stage < count($stages)){
+        $start_time = time();
+        call_user_func($stages[$current_stage]);
+        $elapsed = time() - $start_time;
+        echo("Operation Time:   " . $elapsed  ." sec <br/>");
+    } else {
+        echo("Migration Done!");
+    }
+} catch (Exception $e) {
+    $this->migration_persistence->reportProblem(-1, "unknown", $e->getMessage());
 }
+
 
