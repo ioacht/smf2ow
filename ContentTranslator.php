@@ -50,7 +50,7 @@ class ContentTranslator {
         return preg_replace($pattern, $replacement, $text);
     }
 
-    // Migrated from the original SMF2.1 source, for a multi-thousand line function galore -_-
+    // Adopted from the original SMF2.1 source, for a multi-thousand line function galore -_-
     private static function parse_bbc($message)
     {
         $smileys = true;
