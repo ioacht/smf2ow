@@ -24,7 +24,8 @@ class PostsMigrator {
 
     public function migrate() {
         $this->remaining_count = BATCH_SIZE;
-        $index = $this->migration_persistence->getState()["current_forum_index"];
+        $state = $this->migration_persistence->getState();
+        $index = $state["current_forum_index"];
         $smf_forum_ids = unserialize(SMF_FORUM_IDS);
         $ow_forum_ids = unserialize(OW_FORUM_IDS);
         $this->migrateTopicsForForum($smf_forum_ids[$index], $ow_forum_ids[$index]);
@@ -63,7 +64,8 @@ class PostsMigrator {
     }
 
     private function moveToNextForumOrNextSage() {
-        $index = $this->migration_persistence->getState()["current_forum_index"];
+        $state = $this->migration_persistence->getState();
+        $index = $state["current_forum_index"];
         $smf_forum_ids = unserialize(SMF_FORUM_IDS);
         if($index + 1 < count($smf_forum_ids)){
             $this->migration_persistence->progressToNextForum();
@@ -91,7 +93,8 @@ class PostsMigrator {
             }
         }
         // Update state
-        $this->migration_persistence->setLastImportedPostId(end($posts)["id_msg"], $smf_topic_id);
+        $last_post = end($posts);
+        $this->migration_persistence->setLastImportedPostId($last_post["id_msg"], $smf_topic_id);
         $this->remaining_count -= count($posts);
     }
 

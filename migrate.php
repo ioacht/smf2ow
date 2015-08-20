@@ -31,7 +31,8 @@ $stages = array(
 
 // Go!
 try{
-    $current_stage = $persistence->getState()['current_stage'];
+    $state = $persistence->getState();
+    $current_stage = $state['current_stage'];
     if($current_stage < count($stages)){
         $start_time = time();
         call_user_func($stages[$current_stage]);

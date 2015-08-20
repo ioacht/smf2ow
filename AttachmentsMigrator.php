@@ -32,7 +32,8 @@ class AttachmentsMigrator {
             }
         }
         // Update state
-        $this->migration_persistence->setLastImportedAttachmentId(end($attachments)['id_attach']);
+        $last_attachment = end($attachments);
+        $this->migration_persistence->setLastImportedAttachmentId($last_attachment['id_attach']);
         if(count($attachments) < BATCH_SIZE) {
             $this->migration_persistence->progressToNextStage();
         }

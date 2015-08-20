@@ -48,7 +48,8 @@ class UsersMigrator {
             }
         }
         // Update state
-        $this->migration_persistence->setLastUserId(end($smf_users)['id_member']);
+        $lastUser = end($smf_users);
+        $this->migration_persistence->setLastUserId($lastUser['id_member']);
         if(count($smf_users) < BATCH_SIZE) {
             $this->migration_persistence->progressToNextStage();
         }
@@ -65,7 +66,8 @@ class UsersMigrator {
 
     private function getSmfUsers() {
         $bord_ids = join(', ', unserialize(SMF_FORUM_IDS));
-        $last_user_id = $this->migration_persistence->getState()['last_user_id'];
+        $state = $this->migration_persistence->getState();
+        $last_user_id = $state['last_user_id'];
         return $this->smf_db->query("SELECT DISTINCT smf_members.id_member, smf_members.member_name,
             smf_members.date_registered, smf_members.id_group, smf_members.email_address, smf_members.real_name
         FROM smf_members

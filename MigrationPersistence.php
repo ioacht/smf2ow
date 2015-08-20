@@ -133,7 +133,8 @@ class MigrationPersistence {
     }
 
     public function getLastImportedAttachmentId() {
-        return $this->getState()["last_attachment_id"];
+        $state = $this->getState();
+        return $state["last_attachment_id"];
     }
 
     private function __construct()
