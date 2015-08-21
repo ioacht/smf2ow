@@ -44,8 +44,7 @@ class PostsMigrator {
             $last_topic_id = $this->migration_persistence->getLastImportedTopicId($smf_forum_id);
             $last_post_id = $this->migration_persistence->getLastImportedPostId($last_topic_id);
             $topicAndNext = $this->getCurrentAndNextTopicForForum($smf_forum_id, $last_topic_id);
-            echo("\n<br>\n<br>last_topic_id: ".$last_topic_id . "\n<br>");
-            echo("\n<br>\n<br>last_post_id: " .$last_post_id) . "\n<br>";
+            echo("\n<br>last_topic_id: ".$last_topic_id . "\n<br>last_post_id: " .$last_post_id . "\n<br>");
             $topic = $topicAndNext[0];
             if($last_post_id === null) {
                 $ow_topic_id = $this->addTopicToOw($topic, $ow_forum_id);
@@ -138,7 +137,6 @@ class PostsMigrator {
 
     private function addMessageToOw($smf_post_data, $ow_topic_id) {
         $smf_post_id =  $smf_post_data['id_msg'];
-        echo("Migrating post #".$smf_post_id."\n<br>    ");
         try {
             $ow_post_dto = new FORUM_BOL_Post();
             $ow_post_dto->userId = $this->migration_persistence->getOwUserId($smf_post_data['id_member']);
