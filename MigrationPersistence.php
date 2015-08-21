@@ -21,6 +21,16 @@ class MigrationPersistence {
         return self::$classInstance;
     }
 
+    public function log($message, $type = "MESSAGE") {
+        $this->db->insert(self::$pre.'_log', array("message" => $message, "message_type" => $type));
+    }
+
+    public function reportError($errno, $errstr, $errfile, $errline) {
+        $log_str = "ERROR: [$errno] $errstr.    On line $errline in file $errfile";
+        $this->log($log_str, "PHP ERROR");
+        return false;
+    }
+
     public function addUserEntry($smf_id, $ow_id, $smf_username) {
         $this->db->insert(self::$pre.'_users', array("smf_id" => $smf_id, "ow_id" => $ow_id, "smf_user_name" => $smf_username));
     }
@@ -198,7 +208,17 @@ class MigrationPersistence {
           id INT(8) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
           object_type varchar(20),
           object_id INT(8) UNSIGNED,
-          error_message varchar(256)
+          error_message varchar(256),
+          updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ON UPDATE CURRENT_TIMESTAMP
+        )", self::$pre);
+
+        $sql_log = sprintf("CREATE TABLE IF NOT EXISTS %s_log (
+          id INT(8) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+          message varchar(1024),
+          message_type varchar(20),
+          updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ON UPDATE CURRENT_TIMESTAMP
         )", self::$pre);
 
         $sql_state = sprintf("CREATE TABLE IF NOT EXISTS %s_state (
@@ -206,14 +226,18 @@ class MigrationPersistence {
           current_stage INT(1) UNSIGNED,
           current_forum_index INT(2) UNSIGNED,
           last_user_id INT(8) UNSIGNED,
-          last_attachment_id INT(8) UNSIGNED
+          last_attachment_id INT(8) UNSIGNED,
+          updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ON UPDATE CURRENT_TIMESTAMP
         )", self::$pre);
 
         $sql_last_import = sprintf("CREATE TABLE IF NOT EXISTS %s_last_import (
           id INT(1) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
           object_type varchar(20),
           object_id INT(8) UNSIGNED,
-          parent_id INT(8) UNSIGNED
+          parent_id INT(8) UNSIGNED,
+          updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ON UPDATE CURRENT_TIMESTAMP
         )", self::$pre);
 
         if ($conn->query($sql_users) !== TRUE) {
@@ -234,6 +258,10 @@ class MigrationPersistence {
 
         if ($conn->query($sql_problems) !== TRUE) {
             throw new Exception('MigrationMapper problems table creation failed');
+        }
+
+        if ($conn->query($sql_log) !== TRUE) {
+            throw new Exception('MigrationMapper log table creation failed');
         }
 
         if ($conn->query($sql_state) !== TRUE) {

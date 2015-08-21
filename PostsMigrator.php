@@ -44,21 +44,24 @@ class PostsMigrator {
             $last_topic_id = $this->migration_persistence->getLastImportedTopicId($smf_forum_id);
             $last_post_id = $this->migration_persistence->getLastImportedPostId($last_topic_id);
             $topicAndNext = $this->getCurrentAndNextTopicForForum($smf_forum_id, $last_topic_id);
+            echo("\n<br>\n<br>last_topic_id: ".$last_topic_id . "\n<br>");
+            echo("\n<br>\n<br>last_post_id: " .$last_post_id) . "\n<br>";
             $topic = $topicAndNext[0];
             if($last_post_id === null) {
                 $ow_topic_id = $this->addTopicToOw($topic, $ow_forum_id);
             } else {
                 $ow_topic_id = $this->migration_persistence->getOwTopicId($topic["id_topic"]);
             }
-            $this->migrateMessagesForTopic($topic["id_topic"], $ow_topic_id, $topic['id_last_msg']);
+            $topic_fully_migrated = $this->migrateMessagesForTopic($topic["id_topic"], $ow_topic_id, $topic['id_last_msg']);
             // Update state
-            if($this->remaining_count > 0) {
-                if(count($topicAndNext) === 2){
-                    $this->migration_persistence->setLastImportedTopicId($topicAndNext[1]["id_topic"], $smf_forum_id);
-                } else {
-                    $this->moveToNextForumOrNextSage();
-                    break;
-                }
+            if(!$topic_fully_migrated) {
+                $this->migration_persistence->setLastImportedTopicId($topicAndNext[0]["id_topic"], $smf_forum_id);
+            }
+            else if(count($topicAndNext) === 2){
+                $this->migration_persistence->setLastImportedTopicId($topicAndNext[1]["id_topic"], $smf_forum_id);
+            } else {
+                $this->moveToNextForumOrNextSage();
+                break;
             }
         }
     }
@@ -96,6 +99,7 @@ class PostsMigrator {
         $last_post = end($posts);
         $this->migration_persistence->setLastImportedPostId($last_post["id_msg"], $smf_topic_id);
         $this->remaining_count -= count($posts);
+        return count($posts) < $this->remaining_count;
     }
 
     private function getPostsForTopic($smf_topic_id) {

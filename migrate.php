@@ -3,10 +3,11 @@ ini_set("display_errors", "1");
 error_reporting(E_ALL);
 
 require_once("conf.php");
+require_once("MigrationPersistence.php");
 require_once("UsersMigrator.php");
 require_once("PostsMigrator.php");
 require_once("AttachmentsMigrator.php");
-require_once("MigrationPersistence.php");
+
 include(OW_DIR_ROOT . 'ow_includes' . DS . 'init.php');
 require_once(OW_DIR_ROOT . 'ow_includes' . DS . 'init.php');
 
@@ -16,6 +17,8 @@ $application->init();
 
 // Persistence
 $persistence = MigrationPersistence::getInstance();
+$persistence->log("start");
+set_error_handler($persistence->reportError);
 
 // Migrators
 $users_migrator = UsersMigrator::getInstance();
@@ -30,19 +33,17 @@ $stages = array(
 );
 
 // Go!
-try{
-    $state = $persistence->getState();
-    $current_stage = $state['current_stage'];
-    if($current_stage < count($stages)){
-        $start_time = time();
-        call_user_func($stages[$current_stage]);
-        $elapsed = time() - $start_time;
-        echo("Operation Time:   " . $elapsed  ." sec <br/>");
-    } else {
-        echo("Migration Done!");
-    }
-} catch (Exception $e) {
-    $this->migration_persistence->reportProblem(-1, "unknown", $e->getMessage());
+$state = $persistence->getState();
+$current_stage = $state['current_stage'];
+if($current_stage < count($stages)){
+    $start_time = time();
+    call_user_func($stages[$current_stage]);
+    $elapsed = time() - $start_time;
+    echo("Operation Time:   " . $elapsed  ." sec <br/>");
+} else {
+    echo("Migration Done!");
 }
+
+$persistence->log("end");
 
 
