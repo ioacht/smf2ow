@@ -109,19 +109,23 @@ class PostsMigrator {
     private function addTopicToOw($smf_topic_data, $ow_group_id) {
         try {
             $smf_topic_id = $smf_topic_data["id_topic"];
-            $title = utf8_encode($smf_topic_data['subject']);
-            $ow_topic_dto = new FORUM_BOL_Topic();
-            $ow_topic_dto->groupId = $ow_group_id;
-            $ow_topic_dto->lastPostId = 0;
-            $ow_topic_dto->sticky = $smf_topic_data['is_sticky'];
-            $ow_topic_dto->title = $title;
-            $ow_topic_dto->userId = $this->migration_persistence->getOwUserId($smf_topic_data["id_member_started"]);
-            $ow_topic_dto->viewCount = $smf_topic_data['num_views'];
-            $ow_topic_dto->locked = $smf_topic_data['locked'];
-            $this->ow_forum_service->saveOrUpdateTopic($ow_topic_dto);
-            $this->migration_persistence->addTopicEntry($smf_topic_id, $ow_topic_dto->getId());
-            echo("Topic \"" . $smf_topic_id ."\" migrated successfully! <br/>");
-            return $ow_topic_dto->getId();
+            $ow_topic_id = $this->migration_persistence->getOwTopicId($smf_topic_id);   
+            if(!$ow_topic_id){
+                $title = utf8_encode($smf_topic_data['subject']);
+                $ow_topic_dto = new FORUM_BOL_Topic();
+                $ow_topic_dto->groupId = $ow_group_id;
+                $ow_topic_dto->lastPostId = 0;
+                $ow_topic_dto->sticky = $smf_topic_data['is_sticky'];
+                $ow_topic_dto->title = $title;
+                $ow_topic_dto->userId = $this->migration_persistence->getOwUserId($smf_topic_data["id_member_started"]);
+                $ow_topic_dto->viewCount = $smf_topic_data['num_views'];
+                $ow_topic_dto->locked = $smf_topic_data['locked'];
+                $this->ow_forum_service->saveOrUpdateTopic($ow_topic_dto);
+                $this->migration_persistence->addTopicEntry($smf_topic_id, $ow_topic_dto->getId());
+                $ow_topic_id = $ow_topic_dto->getId();
+                echo("Topic \"" . $smf_topic_id ."\" migrated successfully! <br/>");
+            }
+            return $ow_topic_id;
         } catch (Exception $e) {
             $this->migration_persistence->reportProblem($smf_topic_id, "topic", $e->getMessage());
             echo 'Error while migrating topic : ' . $e->getMessage() . "  ID: " . $smf_topic_id . " <br/>";
