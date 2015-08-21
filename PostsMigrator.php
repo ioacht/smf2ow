@@ -138,6 +138,7 @@ class PostsMigrator {
 
     private function addMessageToOw($smf_post_data, $ow_topic_id) {
         $smf_post_id =  $smf_post_data['id_msg'];
+        echo("Migrating post #".$smf_post_id."\n<br>    ");
         try {
             $ow_post_dto = new FORUM_BOL_Post();
             $ow_post_dto->userId = $this->migration_persistence->getOwUserId($smf_post_data['id_member']);

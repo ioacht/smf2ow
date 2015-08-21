@@ -1096,7 +1096,7 @@ class ContentTranslator {
 
                     // Okay, this may look ugly and it is, but it's not going to happen much and it is the best way of allowing any order of parameters but still parsing them right.
                     $match = false;
-                    $orders = permute($preg);
+                    $orders = ContentTranslator::permute($preg);
                     foreach ($orders as $p)
                         if (preg_match('~^' . implode('', $p) . '\]~i', substr($message, $pos1 - 1), $matches) != 0)
                         {
@@ -1460,5 +1460,25 @@ class ContentTranslator {
         $message = strtr($message, array('  ' => ' &nbsp;', "\r" => '', "\n" => '<br>', '<br> ' => '<br>&nbsp;', '&#13;' => "\n"));
 
         return $message;
+    }
+
+    // Adopted from the original SMF2.1 source
+    private static function permute($array)
+    {
+        $orders = array($array);
+        $n = count($array);
+        $p = range(0, $n);
+        for ($i = 1; $i < $n; null)
+        {
+            $p[$i]--;
+            $j = $i % 2 != 0 ? $p[$i] : 0;
+            $temp = $array[$i];
+            $array[$i] = $array[$j];
+            $array[$j] = $temp;
+            for ($i = 1; $p[$i] == 0; $i++)
+                $p[$i] = 1;
+            $orders[] = $array;
+        }
+        return $orders;
     }
 }

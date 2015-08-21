@@ -18,7 +18,6 @@ $application->init();
 // Persistence
 $persistence = MigrationPersistence::getInstance();
 $persistence->log("start");
-set_error_handler($persistence->reportError);
 
 // Migrators
 $users_migrator = UsersMigrator::getInstance();

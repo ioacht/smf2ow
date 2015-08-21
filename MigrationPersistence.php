@@ -25,12 +25,6 @@ class MigrationPersistence {
         $this->db->insert(self::$pre.'_log', array("message" => $message, "message_type" => $type));
     }
 
-    public function reportError($errno, $errstr, $errfile, $errline) {
-        $log_str = "ERROR: [$errno] $errstr.    On line $errline in file $errfile";
-        $this->log($log_str, "PHP ERROR");
-        return false;
-    }
-
     public function addUserEntry($smf_id, $ow_id, $smf_username) {
         $this->db->insert(self::$pre.'_users', array("smf_id" => $smf_id, "ow_id" => $ow_id, "smf_user_name" => $smf_username));
     }
