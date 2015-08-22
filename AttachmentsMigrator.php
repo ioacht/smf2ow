@@ -41,60 +41,25 @@ class AttachmentsMigrator {
 
     private function addAttachmentToOW($smf_attachment) {
         $smf_file_path = $this->getSmfFilePath($smf_attachment);
-        $attachment_service = BOL_AttachmentService::getInstance();
-        $attachment_dao = BOL_AttachmentDao::getInstance();;
+        $ow_post_id = $this->migration_persistence->getOwPostId($smf_attachment['id_msg']);
+        $orig_filename = htmlspecialchars($smf_attachment['filename']);
 
-        $attachDto = new BOL_Attachment();
-        $attachDto->setUserId(OW::getUser()->getId());
-        $attachDto->setAddStamp(time());
-        $attachDto->setStatus(0);
-        $attachDto->setSize(floor($smf_attachment['size'] / 1024));
-        $attachDto->setOrigFileName(htmlspecialchars($smf_attachment['filename']));
-        $attachDto->setFileName(uniqid() . '_' . UTIL_File::sanitizeName($attachDto->getOrigFileName()));
-        $attachDto->setPluginKey("forum");
+        $attachmentService = FORUM_BOL_PostAttachmentService::getInstance();
+        $attachmentDto = new FORUM_BOL_PostAttachment();
 
-        $attachment_dao->save($attachDto);
-        $uploadPath = $attachment_service->getAttachmentsDir() . $attachDto->getFileName();
+        $attachmentDto->postId = $ow_post_id;
+        $attachmentDto->fileName = $orig_filename;
+        $attachmentDto->fileNameClean = uniqid() . '_' . UTIL_File::sanitizeName($orig_filename);
+        $attachmentDto->fileSize = $smf_attachment['size'];
+        $attachmentDto->hash = uniqid();
 
-        if ( in_array(UTIL_File::getExtension($smf_file_path), array('jpg', 'jpeg', 'gif', 'png')) )
-        {
-            $image = new UTIL_Image($smf_file_path);
-
-            if ( empty($dimensions) )
-            {
-                $dimensions = array('width' => 1000, 'height' => 1000);
-            }
-
-            $image->resizeImage($dimensions['width'], $dimensions['height'])->orientateImage()->saveImage($uploadPath);
-            $image->destroy();
-        }
-        else
-        {
-            OW::getStorage()->copyFile($smf_file_path, $uploadPath);
-        }
-
-        $this->addOwPostAttachment($attachDto, $smf_attachment['id_msg']);
+        $attachmentService->addAttachment($attachmentDto, $smf_file_path);
     }
 
     private function getSmfFilePath($smf_attachment) {
         $folder_index = $smf_attachment['id_folder'] - 1;
         $folders = unserialize(SMF_ATTACHMENT_FOLDERS);
-        //TODO: the real system probably uses hash and not file name
-        return $folders[$folder_index] . DS . $smf_attachment['filename'];
-    }
-
-    private function addOwPostAttachment($ow_attachment, $smf_post_id) {
-        $dao = FORUM_BOL_PostAttachmentDao::getInstance();
-        $ow_post_id = $this->migration_persistence->getOwPostId($smf_post_id);
-
-        $attachmentDto = new FORUM_BOL_PostAttachment();
-        $attachmentDto->postId = $ow_post_id;
-        $attachmentDto->fileName = $ow_attachment->getOrigFileName();
-        $attachmentDto->fileNameClean = $ow_attachment->getFileName();
-        $attachmentDto->fileSize = $ow_attachment->getSize() * 1024;
-        $attachmentDto->hash = uniqid();
-
-        $dao->save($attachmentDto);
+        return $folders[$folder_index] . DS . $smf_attachment[id_attach] . "_" . $smf_attachment[file_hash];
     }
 
     private function getSmfAttachments() {
