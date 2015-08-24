@@ -28,7 +28,7 @@ class AttachmentsMigrator {
                 echo("Attached file \"" . $attachment["filename"] . "\" migrated successfully!<br/>");
             } catch(Exception $e) {
                 $this->migration_persistence->reportProblem($attachment['id_attach'], "attachment", $e->getMessage());
-                echo 'Error while migrating attachment "' . $attachment["filename"] . '" : ' . $e->getMessage() . " <br/>";
+                echo("Error while migrating attachment " . $attachment["filename"] . '" : ' . $e->getMessage() . " <br/>");
             }
         }
         // Update state
@@ -41,19 +41,28 @@ class AttachmentsMigrator {
 
     private function addAttachmentToOW($smf_attachment) {
         $smf_file_path = $this->getSmfFilePath($smf_attachment);
-        $ow_post_id = $this->migration_persistence->getOwPostId($smf_attachment['id_msg']);
-        $orig_filename = htmlspecialchars($smf_attachment['filename']);
+        if(file_exists($smf_file_path)){
+            $ow_post_id = $this->migration_persistence->getOwPostId($smf_attachment['id_msg']);
+            $orig_filename = htmlspecialchars($smf_attachment['filename']);
+            $filename = uniqid() . '_' . UTIL_File::sanitizeName($orig_filename);
 
-        $attachmentService = FORUM_BOL_PostAttachmentService::getInstance();
-        $attachmentDto = new FORUM_BOL_PostAttachment();
+            $base_attachment_service = BOL_AttachmentService::getInstance();
+            $tempPath = $base_attachment_service->getAttachmentsDir() . 'temp_' . $filename;
+            OW::getStorage()->copyFile($smf_file_path, $tempPath);
 
-        $attachmentDto->postId = $ow_post_id;
-        $attachmentDto->fileName = $orig_filename;
-        $attachmentDto->fileNameClean = uniqid() . '_' . UTIL_File::sanitizeName($orig_filename);
-        $attachmentDto->fileSize = $smf_attachment['size'];
-        $attachmentDto->hash = uniqid();
+            $attachmentService = FORUM_BOL_PostAttachmentService::getInstance();
+            $attachmentDto = new FORUM_BOL_PostAttachment();
+            $attachmentDto->postId = $ow_post_id;
+            $attachmentDto->fileName = $orig_filename;
+            $attachmentDto->fileNameClean = $filename;
+            $attachmentDto->fileSize = $smf_attachment['size'];
+            $attachmentDto->hash = uniqid();
 
-        $attachmentService->addAttachment($attachmentDto, $smf_file_path);
+            $attachmentService->addAttachment($attachmentDto, $tempPath);
+            $this->migration_persistence->addAttachmentEntry($smf_attachment[id_attach], $attachmentDto->getId());
+        } else {
+            throw new Exception("File does not exist in SMF attachments folder");
+        }
     }
 
     private function getSmfFilePath($smf_attachment) {
